@@ -1,0 +1,71 @@
+%Function to calculate the Forward kinematics for the specific SCARA robot
+%configuration
+function T = fwkinscara(q)
+
+    %Pre-defined constants
+    l1=0.5;
+    l2=0.5;
+    l4=0.1;
+    d3=q(:,3);
+    
+    %Calculations based on figure
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Omega calculations made based on the table
+    om_1=[0 0 1];
+    om_2=[0 0 1];
+    om_3=[0 0 -1];
+    om_4=[0 0 1];
+
+    %P calculations made based on the figure
+    p_1=[0 0 0];
+    p_2=[l1 0 0];
+    p_3=[l1+l2 0 0];
+    p_4=[l1+l2 0 0];
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %Calculated M matrix
+    M=[1 0 0 l1+l2;0 -1 0 0; 0 0 -1 d3+l4;0 0 0 1];
+
+    %Initializing the POE as M
+    mul= M;
+
+    %Matrices with all calculated values
+    omega=[om_1;om_2;om_3; om_4];
+    p_vals=[p_1;p_2;p_3;p_4];
+
+    %Looping over all joints
+    for n=1:size(omega,1)
+
+        %Omega square bracket calculation based on omega for the particular
+        %joint
+        omega_square=[0 -omega(n,3) omega(n,2); omega(n,3) 0 omega(n,1); -omega(n,2) -omega(n,1) 0];
+        
+        %Corresponding P value for the joint
+        p_vals(n,:);
+        
+        %Calculation of Velocity for the particular joint
+        v=-omega_square * p_vals(n,:)';
+        
+        %Rotational matrix calculation
+        rot=eye(3)+sin(q(:,n)).*omega_square + (1 - cos(q(:,n))).*(omega_square*omega_square);
+        
+        %Translational matrix calculation
+        trans=(eye(3)*q(:,n) + (1 - cos(q(:,n)))*omega_square + (q(:,n)-sin(q(:,n))).*(omega_square * omega_square)) * v;
+
+        %Formation of homogenous matrix
+        hom= [rot(1,:) trans(1,:);
+              rot(2,:)  trans(2,:);
+              rot(3,:)  trans(3,:);
+              0 0 0 1];
+
+
+        %Updating POE
+        mul=mul*hom;
+
+    end
+    
+    %Final result
+    T = mul;
+
+end

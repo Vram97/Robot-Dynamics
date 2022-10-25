@@ -1,0 +1,35 @@
+%Function to calculate the Forward kinematics for the specific SCARA robot
+%configuration
+function T = fwkinscara(q)
+
+    %Pre-defined constants
+    l1=0.5;
+    l2=0.5;
+    l4=0.1;
+    d3=q(:,3);
+
+    alpha_vals=[0 pi -pi pi];
+    a_vals=[l1 l2 0 0];
+    d_vals=[0 0 d3 -l4];
+    phi_vals=[0 0 0 0 0];
+
+    function hom = tdh(alpha, a, d, phi)
+
+    %Pre defined formula derived in lectures
+    hom=[cos(phi) -sin(phi) 0 a; 
+       sin(phi)*cos(alpha) cos(phi)*cos(alpha) -sin(alpha) -d*sin(alpha); 
+       sin(phi)*sin(alpha) cos(phi)*sin(alpha) cos(alpha) d*cos(alpha);
+       0 0 0 1]
+
+    end
+    
+    mul=eye(4);
+
+    for n=1:size(alpha_vals,2)
+        hom_joint=tdh(alpha_vals(:,n), a_vals(:,n), d_vals(:,n), phi_vals(:,n))
+        mul=mul * hom_joint;
+        
+    end
+    
+    T=mul;
+end
