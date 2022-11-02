@@ -1,0 +1,4 @@
+%%Function to calculate omega in body frame
+function omega_b=angvelocityspace2body(omega_s,R)
+    omega_b=
+end
