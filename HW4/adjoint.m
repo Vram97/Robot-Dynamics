@@ -1,16 +1,14 @@
-%%Function to calculate the velocity about a different axis given the Transformation matrix
-function adj=adjoint(T)
+%%Function to calculate the adjoint matrix from the twist
+function adj=ad(V1)
 
-    %Calculating the rotation matrix from the homogenous matrix
-    R=T(1:3,1:3);
+    %Calculation of rotation matrix required to form the adjoint
+    skew_omega=[0 -V1(3,1) V1(2,1); V1(3,1) 0 -V1(1,1); -V1(2,1) V1(1,1) 0];
 
-    %Skew symmetric matrix of the translation vector
-    P_skew=[0 -T(3,4) T(2,4); T(3,4) 0 -T(1,4); -T(2,4) T(1,4) 0];
+    %Skew symmetric matrix of velocity vector
+    skew_v=[0 -V1(6,1) V1(5,1); V1(6,1) 0 -V1(4,1); -V1(5,1) V1(4,1) 0];
 
-    %Calculating the bottom term of the adjoint matrix
-    bottom_term=P_skew*R;
+    %Adjoint calculation
+    adj=[skew_omega zeros(3);
+         skew_v skew_omega];
     
-    %Calculating the adjoint matrix
-    adj=[R zeros(3);
-         bottom_term R];
 end
